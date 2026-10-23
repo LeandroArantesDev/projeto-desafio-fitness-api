@@ -1,0 +1,89 @@
+ESTRUTURA DO PROJETO - projeto-desafio-fitness
+================================================
+
+Arquitetura em camadas (padrao MVC): Servlet (controller) -> Service (regra
+de negocio) -> DAO (acesso a banco) -> Model (dados). As views sao JSP.
+
+Fluxo de uma requisicao:
+  Request HTTP -> Controller -> Service -> DAO -> Banco de dados
+                     |             |
+                     v             v
+                 escolhe JSP   valida regras
+
+
+src/main/java/com/fitness/
+----------------------------
+model/
+    Usuario.java, Perfil.java
+    Apenas os dados (getters/setters), sem logica. Representam as tabelas
+    do banco.
+
+dao/
+    UsuarioDAO.java, PerfilDAO.java, MysqlDAO.java (classe base)
+    Apenas SQL puro (SELECT/INSERT/UPDATE/DELETE) e conversao de
+    ResultSet para objeto. Nenhuma validacao ou regra de negocio aqui.
+
+service/
+    UsuarioService.java, PerfilService.java
+    Regra de negocio: validacoes, autenticacao, senha minima, login
+    unico, etc. Chama o DAO. Nunca lida com HttpServletRequest/Response.
+
+controller/
+    UsuarioServlet.java, PerfilServlet.java, LoginServlet.java,
+    HomeServlet.java, LogoutServlet.java, BaseServlet.java
+    Ponte entre a rota HTTP e o Service. Le parametros (acao, id), chama
+    o Service e decide qual JSP mostrar ou se redireciona.
+    BaseServlet e a classe base: so tem metodos utilitarios genericos
+    (param, paramLong, forward, redirect), sem regra nenhuma.
+
+filter/
+    AuthFilter.java
+    Intercepta as requisicoes antes do Servlet, verifica se o usuario
+    esta logado (sessao). Mexer aqui apenas para regras globais de
+    autenticacao/seguranca.
+
+config/
+    MysqlSingleton.java
+    Conexao unica com o banco de dados (padrao singleton). Mexer apenas
+    se mudar a configuracao de conexao.
+
+
+src/main/webapp/
+-----------------
+index.jsp
+    Pagina inicial publica.
+
+WEB-INF/web.xml
+    Configuracao do servlet container.
+
+WEB-INF/jsp/
+    Views protegidas, so acessiveis via forward do controller (nao por
+    URL direta). Organizadas por entidade:
+      usuarios/lista.jsp e usuarios/form.jsp
+      perfis/lista.jsp e perfis/form.jsp
+      login.jsp
+      home.jsp
+
+css/estilo.css
+    Estilo visual da aplicacao.
+
+
+Pastas que NAO devem ser editadas manualmente
+----------------------------------------------
+target/   -> gerado automaticamente pelo Maven ao compilar (mvn compile/
+             package). Qualquer edicao manual e perdida no proximo build.
+deploy/   -> artefato de deploy (WAR extraido). Mesma logica do target/,
+             nao e codigo-fonte.
+
+Ambas as pastas estao no .gitignore e nao devem ser versionadas no Git.
+
+
+Outros arquivos na raiz
+------------------------
+database.sql       -> script de criacao/estrutura do banco de dados.
+docker-compose.yml -> sobe o ambiente (ex: banco MySQL) via Docker.
+pom.xml             -> configuracao do Maven (dependencias, build).
+
+Regra geral: cada camada so fala com a camada de baixo dela
+(Controller -> Service -> DAO). Nunca pular camada (ex: Controller
+chamando DAO direto).

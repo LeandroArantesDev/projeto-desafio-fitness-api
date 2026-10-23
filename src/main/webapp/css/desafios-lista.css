@@ -1,0 +1,38 @@
+td .unit {
+  font-size: var(--fs-support);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.status-tag {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-label);
+  color: var(--muted);
+}
+
+.status-tag--ativo {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+.status-tag--encerrado {
+  color: var(--color-label);
+}
+
+.status-tag--cancelado {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.status-tag--rascunho {
+  border-style: dashed;
+  color: var(--color-label);
+}

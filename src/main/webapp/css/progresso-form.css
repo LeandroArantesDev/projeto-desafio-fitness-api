@@ -1,0 +1,76 @@
+main.container {
+  width: min(1040px, 94%);
+}
+
+.progresso-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 440px) 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.progresso-layout__history h2 {
+  margin-top: 0;
+}
+
+@media (max-width: 800px) {
+  .progresso-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.progress-card {
+  margin-bottom: 1.5rem;
+}
+
+.progress-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.75rem;
+}
+
+.progress-card__label {
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-label);
+  color: var(--color-label);
+}
+
+.progress-card__percent {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: var(--fw-number);
+  color: var(--color-ink);
+}
+
+.progress-card__track {
+  height: 0.6rem;
+  background: var(--color-track);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.progress-card__fill {
+  height: 100%;
+  background: var(--color-accent);
+}
+
+.progress-card__detail {
+  margin: 0.75rem 0 0;
+  font-size: var(--fs-support);
+  line-height: var(--lh-support);
+  color: var(--muted);
+}
+
+.progress-card__detail strong {
+  color: var(--color-ink);
+}
+
+td .unit {
+  font-size: var(--fs-support);
+  text-transform: uppercase;
+  color: var(--muted);
+}
