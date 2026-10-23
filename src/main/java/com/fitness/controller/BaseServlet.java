@@ -9,6 +9,12 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Map;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
 
 /**
  * Base dos controllers.
@@ -16,6 +22,50 @@ import java.time.format.DateTimeParseException;
  * Regra de negocio fica no Service.
  */
 public abstract class BaseServlet extends HttpServlet {
+
+    // 1. Instância compartilhada do Gson com suporte a LocalDateTime
+    protected final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, 
+                (JsonSerializer<LocalDateTime>) (data, tipo, contexto) -> 
+                    data != null ? new JsonPrimitive(data.toString()) : null)
+            .create();
+
+    // 2. Método para responder qualquer objeto em formato JSON
+    protected void responderJson(HttpServletResponse resp, int status, Object dados) throws IOException {
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        resp.setStatus(status);
+
+        if (dados != null) {
+            resp.getWriter().write(this.gson.toJson(dados));
+        }
+    }
+
+    // 3. Método para responder mensagens de erro padronizadas: {"erro": "mensagem"}
+    protected void responderErro(HttpServletResponse resp, int status, String mensagem) throws IOException {
+        this.responderJson(resp, status, Map.of("erro", mensagem));
+    }
+
+    // 4. Método para ler o corpo (Body) da requisição e converter em objeto Java
+    protected <T> T lerJson(HttpServletRequest req, Class<T> classe) throws IOException {
+        return this.gson.fromJson(req.getReader(), classe);
+    }
+
+    // 5. Método para extrair o ID numérico da URL (/10 -> 10L)
+    protected Long extrairId(HttpServletRequest req) {
+        String path = req.getPathInfo();
+        if (path == null || path.equals("/")) {
+            return null; // Não foi passado ID (é listagem geral)
+        }
+        // Remove a barra inicial "/" e tenta converter em número
+        return Long.parseLong(path.substring(1));
+    }
+
+    //
+    //
+    // A PARTIR DAQUI É O CONTROLLER ANTIGO - RETIRAR DEPOIS AS FUNÇÕES
+    //
+    //
 
     // le a acao da URL (?acao=...); sem valor, assume "listar"
     protected String acao(HttpServletRequest req) {
@@ -52,7 +102,7 @@ public abstract class BaseServlet extends HttpServlet {
         }
         try {
             return Double.valueOf(valor);
-        } catch (NumberFormatException e) {https://github.com/LeandroArantesDev/projeto-desafio-fitness
+        } catch (NumberFormatException e) {
             return null;
         }
     }

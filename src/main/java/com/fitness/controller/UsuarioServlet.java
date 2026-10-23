@@ -2,89 +2,151 @@ package com.fitness.controller;
 
 import com.fitness.model.Usuario;
 import com.fitness.service.UsuarioService;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Controller de Usuario.
  * Ponte entre rota, service e view — sem regra de negocio.
  */
-@WebServlet("/usuarios")
+@WebServlet("/api/usuarios/*")
 public class UsuarioServlet extends BaseServlet {
 
-    private static final String LISTA = "/WEB-INF/jsp/usuarios/lista.jsp";
-    private static final String FORM = "/WEB-INF/jsp/usuarios/form.jsp";
-
     private final UsuarioService usuarioService = new UsuarioService();
+
+    // ==========================================
+    // GET: Listar todos ou buscar por ID
+    // ==========================================
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        switch (this.acao(req)) {
-            case "novo" -> this.form(req, resp, null);
-            case "editar" -> this.form(req, resp, this.usuarioService.buscarPorId(this.paramLong(req, "id")));
-            case "excluir" -> {
-                try {
-                    this.usuarioService.deletar(this.paramLong(req, "id"));
-                } catch (IllegalArgumentException e) {
-                    req.setAttribute("erro", e.getMessage());
-                    req.setAttribute("usuarios", this.usuarioService.listar());
-                    this.forward(req, resp, LISTA);
-                    return;
-                }
-                req.setAttribute("sucesso", "Usuario excluido com sucesso.");
-                req.setAttribute("usuarios", this.usuarioService.listar());
-                this.forward(req, resp, LISTA);
-            }
-            default -> {
-                req.setAttribute("usuarios", this.usuarioService.listar());
-                this.forward(req, resp, LISTA);
-            }
-        }
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        req.setCharacterEncoding("UTF-8");
-        Usuario usuario = this.fromRequest(req);
-
         try {
-            this.usuarioService.salvar(usuario);
-            req.setAttribute("sucesso", "Usuario salvo com sucesso.");
-            req.setAttribute("usuarios", this.usuarioService.listar());
-            this.forward(req, resp, LISTA);
-        } catch (IllegalArgumentException e) {
-            req.setAttribute("erro", e.getMessage());
-            this.form(req, resp, usuario);
-        }
-    }
-
-    private void form(HttpServletRequest req, HttpServletResponse resp, Usuario usuario)
-            throws ServletException, IOException {
-
-        if ("editar".equals(this.acao(req)) && usuario == null) {
-            this.redirect(req, resp, "/usuarios");
+            Long id = this.extrairId(req);
+        
+            if (id == null) {
+                List<Usuario> lista = this.usuarioService.listar();
+                for (Usuario u : lista) {
+                    u.setSenha(null);
+                }
+            
+            this.responderJson(resp, 200, lista);
             return;
         }
 
-        req.setAttribute("usuario", usuario);
-        this.forward(req, resp, FORM);
+            Usuario usuario = this.usuarioService.buscarPorId(id);
+
+            if (usuario == null) {
+                this.responderErro(resp, 404, "Usuário não encontrado");
+                return;
+            }
+
+            usuario.setSenha(null);
+            this.responderJson(resp, 200, usuario);
+        } catch (NumberFormatException e) {
+            this.responderErro(resp, 400, "O ID fornecido na URL é inválido");
+        }
     }
 
-    private Usuario fromRequest(HttpServletRequest req) {
-        Usuario usuario = new Usuario();
-        usuario.setId(this.paramLong(req, "id"));
-        usuario.setNome(this.param(req, "nome"));
-        usuario.setEmail(this.param(req, "email"));
-        usuario.setSenha(this.param(req, "senha"));
-        usuario.setTipo(this.param(req, "tipo"));
-        return usuario;
+    // ==========================================
+    // POST: Criar um novo usuário
+    // ==========================================
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        try {
+            Usuario usuario = this.lerJson(req, Usuario.class);
+
+            if (usuario == null) {
+                this.responderErro(resp, 400, "Dados do usuário não fornecidos.");
+                return;
+            }
+
+            usuario.setId(null);
+            this.usuarioService.salvar(usuario);
+
+            usuario.setSenha(null);
+            this.responderJson(resp, 201, usuario);
+
+        } catch (IllegalArgumentException e) {
+            this.responderErro(resp, 400, e.getMessage());
+        } catch (Exception e) {
+            this.responderErro(resp, 500, "Erro interno ao cadastrar usuário.");
+        }
+    }
+
+    // ==========================================
+    // PUT: Atualizar usuário existente
+    // ==========================================
+
+    @Override 
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        try {
+            Long id = this.extrairId(req);
+            if (id == null) {
+                this.responderErro(resp, 400, "Informe o ID do usuário na URL.");
+                return;
+            }
+
+            Usuario usuario = this.lerJson(req, Usuario.class);
+
+            if(usuario == null) {
+                this.responderErro(resp, 400, "Dados do usuário não fornecidos.");
+                return;
+            }
+
+            usuario.setId(id);
+            this.usuarioService.salvar(usuario);
+
+            usuario.setSenha(null);
+            this.responderJson(resp, 200, usuario);
+
+        }  catch (NumberFormatException e) {
+            this.responderErro(resp, 400, "O ID fornecido na URL é inválido.");
+        } catch (IllegalArgumentException e) {
+            int status = e.getMessage().contains("nao encontrado") ? 404 : 400;
+            this.responderErro(resp, status, e.getMessage());
+        } catch (Exception e) {
+            this.responderErro(resp, 500, "Erro interno ao atualizar usuário.");
+        }
+    }
+
+
+    // ==========================================
+    // DELETE: Excluir usuário
+    // ==========================================
+
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        try {
+            Long id = this.extrairId(req);  
+
+            if (id == null) {
+                this.responderErro(resp, 400, "Informe o ID do usuário na URL");
+                return;
+            }
+
+            this.usuarioService.deletar(id);
+            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+
+        } catch (NumberFormatException e) {
+            this.responderErro(resp, 400, "O ID fornecido na URL é inválido.");
+        } catch (IllegalArgumentException e ) {
+            int status = e.getMessage().contains("nao encontrado") ? 404 : 400;
+            this.responderErro(resp, status, e.getMessage());
+        } catch (Exception e) {
+            this.responderErro(resp, 500, "Erro interno ao excluir usuário");
+        }
     }
 }
