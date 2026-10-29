@@ -1,5 +1,7 @@
 package com.fitness.filter;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fitness.config.JwtUtil;
 import com.fitness.model.Usuario;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -13,7 +15,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/home", "/usuarios", "/usuarios/*", "/perfis", "/perfis/*", "/desafios", "/desafios/*", "/progresso", "/progresso/*"})
+@WebFilter("/api/*")
 public class AuthFilter implements Filter {
 
     @Override
@@ -22,30 +24,48 @@ public class AuthFilter implements Filter {
 
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
-        HttpSession session = req.getSession(false);
 
-        Usuario usuarioLogado = null;
-        if (session != null) {
-            usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
-        }
+        String path = req.getRequestURI();
 
-        if (usuarioLogado == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
+        if (path.endsWith("/api/login")) {
+            chain.doFilter(request, response);
             return;
         }
 
-        // Verificar a url que usuário está tentando acessar
-        String requestURI = req.getRequestURI();
+        String authHeader = req.getHeader("Authorization");
 
-        // Se ele tentar acessar /usuarios ou /perfis, temos que validar se é ADMIN
-        if (requestURI.contains("/usuarios")) {
-            // Se for área de admin, mas o tipo dele for USER (ou diferente de ADMIN), bloqueia!
-            if (!"admin".equalsIgnoreCase(usuarioLogado.getTipo())) {
-                resp.sendRedirect(req.getContextPath() + "/home");
-                return;
-            }
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.getWriter().write("{\"erro\": \"Token não fornecido ou formato inválido. Use: Bearer <token>\"}");
+            return;
         }
 
-        chain.doFilter(request, response);
+        String token = authHeader.substring(7);
+
+        try {
+            DecodedJWT decoded = JwtUtil.validarToken(token);
+
+            if (path.contains("/api/usuarios")) {
+                String tipo = decoded.getClaim("tipo").asString();
+                if (!"admin".equalsIgnoreCase(tipo)) {
+                    resp.setContentType("application/json");
+                    resp.setCharacterEncoding("UTF-8");
+                    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    resp.getWriter().write("{\"erro\": \"Acesso negado: apenas administradores podem acessar este recurso.\"}");
+                    return;
+                }
+            }
+
+            req.setAttribute("UsuarioLogadoId", decoded.getClaim("userId").asLong());
+
+            chain.doFilter(request, response);
+        } catch (Exception e) {
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+            resp.getWriter().write("{\"erro\": \"Token inválido ou expirado.\"}");
+        }
     }
 }

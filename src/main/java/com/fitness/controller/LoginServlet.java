@@ -1,5 +1,6 @@
 package com.fitness.controller;
 
+import com.fitness.config.JwtUtil;
 import com.fitness.model.Usuario;
 import com.fitness.service.UsuarioService;
 import jakarta.servlet.ServletException;
@@ -9,48 +10,48 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.util.Map;
+
+import org.eclipse.tags.shaded.org.apache.bcel.generic.RETURN;
 
 /**
  * Controller de Login.
  * Ponte entre rota (/login), {@link UsuarioService} e a view.
  * Sem regra de negocio: so chama o service e encaminha o resultado.
  */
-@WebServlet("/login")
+@WebServlet("/api/login")
 public class LoginServlet extends BaseServlet {
 
-    private static final String VIEW = "/WEB-INF/jsp/login.jsp";
-
     private final UsuarioService usuarioService = new UsuarioService();
-
+    
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        HttpSession session = req.getSession(false);
-        if (session != null && session.getAttribute("usuarioLogado") != null) {
-            this.redirect(req, resp, "/home");
-            return;
-        }
-
-        this.forward(req, resp, VIEW);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        req.setCharacterEncoding("UTF-8");
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         try {
-            Usuario usuario = this.usuarioService.logar(
-                    this.param(req, "email"),
-                    this.param(req, "senha"));
+            Map<?, ?> dados = this.lerJson(req, Map.class);
+            if (dados == null) {
+                this.responderErro(resp, 400, "Informe e-mail e senha.");
+            }
 
-            req.getSession(true).setAttribute("usuarioLogado", usuario);
-            this.redirect(req, resp, "/home");
+            String email = (String) dados.get("email");
+            String senha = (String) dados.get("senha");
+
+            Usuario usuario = this.usuarioService.logar(email, senha);
+
+            String token = JwtUtil.gerarToken(usuario);
+
+            this.responderJson(resp, 200, Map.of(
+                "token", token,
+                "nome", usuario.getNome(),
+                "tipo", usuario.getTipo()
+            ));
+
         } catch (IllegalArgumentException e) {
-            req.setAttribute("erro", e.getMessage());
-            this.forward(req, resp, VIEW);
-        }
+            this.responderErro(resp, 401, e.getMessage());
+        } catch (Exception e) {
+            this.responderJson(resp, 500, "Erro interno ao realizar login.");
+        } 
+
+        return;
     }
 }

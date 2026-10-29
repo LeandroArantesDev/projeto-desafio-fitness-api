@@ -39,7 +39,7 @@ public class UsuarioServlet extends BaseServlet {
             
             this.responderJson(resp, 200, lista);
             return;
-        }
+            }
 
             Usuario usuario = this.usuarioService.buscarPorId(id);
 

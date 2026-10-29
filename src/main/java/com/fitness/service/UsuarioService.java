@@ -36,7 +36,7 @@ public class UsuarioService {
 
         Usuario usuario = this.usuarioDAO.buscarPorLoginESenha(email, senha);
         if (usuario == null) {
-            throw new IllegalArgumentException("E-mail ou senha invalidos.");
+            throw new IllegalArgumentException("E-mail ou senha inválidos.");
         }
         return usuario;
     }
@@ -87,7 +87,7 @@ public class UsuarioService {
      */
     public void salvar(Usuario usuario) {
         if (usuario == null) {
-            throw new IllegalArgumentException("Usuario e obrigatorio.");
+            throw new IllegalArgumentException("Usuario é obrigatória.");
         }
 
         this.prepararDados(usuario);
@@ -138,13 +138,13 @@ public class UsuarioService {
 
     private void validarCamposObrigatorios(Usuario usuario) {
         if (usuario.getNome() == null) {
-            throw new IllegalArgumentException("Nome e obrigatorio.");
+            throw new IllegalArgumentException("Nome e obrigatório.");
         }
         if (usuario.getEmail() == null) {
-            throw new IllegalArgumentException("E-mail e obrigatorio.");
+            throw new IllegalArgumentException("E-mail e obrigatório.");
         }
         if (usuario.getId() == null && usuario.getSenha() == null) {
-            throw new IllegalArgumentException("Senha e obrigatoria.");
+            throw new IllegalArgumentException("Senha é obrigatória.");
         }
     }
 
