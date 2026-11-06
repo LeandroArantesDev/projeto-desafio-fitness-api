@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
@@ -15,43 +14,36 @@ import java.io.IOException;
  * Ponte entre rota (/login), {@link UsuarioService} e a view.
  * Sem regra de negocio: so chama o service e encaminha o resultado.
  */
-@WebServlet("/register")
+@WebServlet("/api/register/*")
 public class RegisterServlet extends BaseServlet {
-
-    private static final String VIEW = "/WEB-INF/jsp/register.jsp";
 
     private final UsuarioService usuarioService = new UsuarioService();
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    // ==========================================
+    // POST: Criar um novo usuário por fora do site
+    // ==========================================
 
-        HttpSession session = req.getSession(false);
-        if (session != null && session.getAttribute("usuarioLogado") != null) {
-            this.redirect(req, resp, "/home");
-            return;
-        }
-
-        this.forward(req, resp, VIEW);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        req.setCharacterEncoding("UTF-8");
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         try {
-            Usuario usuario = this.usuarioService.registrar(
-                    this.param(req, "nome"),
-                    this.param(req, "email"),
-                    this.param(req, "senha"));
+            Usuario usuario = this.lerJson(req, Usuario.class);
 
-            req.getSession(true).setAttribute("usuarioLogado", usuario);
-            this.redirect(req, resp, "/home");
+            if (usuario == null) {
+                this.responderErro(resp, 400, "Dados do usuário não fornecidos.");
+                return;
+            }
+
+            usuario.setId(null);
+            usuario.setTipo("user");
+            this.usuarioService.salvar(usuario);
+
+            usuario.setSenha(null);
+            this.responderJson(resp, 201, usuario);
+
         } catch (IllegalArgumentException e) {
-            req.setAttribute("erro", e.getMessage());
-            this.forward(req, resp, VIEW);
+            this.responderErro(resp, 400, e.getMessage());
+        } catch (Exception e) {
+            this.responderErro(resp, 500, "Erro interno ao cadastrar usuário.");
         }
     }
 }

@@ -2,7 +2,6 @@ package com.fitness.filter;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fitness.config.JwtUtil;
-import com.fitness.model.Usuario;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -11,12 +10,21 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.util.List;
 
 @WebFilter("/api/*")
 public class AuthFilter implements Filter {
+
+    private static final List<String> ROTAS_PUBLICAS = List.of(
+            "/api/login",
+            "/api/register"
+    );
+
+    private static final List<String> ROTAS_PRIVADAS = List.of(
+            "/api/usuarios"
+    );
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -27,7 +35,7 @@ public class AuthFilter implements Filter {
 
         String path = req.getRequestURI();
 
-        if (path.endsWith("/api/login")) {
+        if (this.contemRota(path, ROTAS_PUBLICAS)) {
             chain.doFilter(request, response);
             return;
         }
@@ -47,7 +55,7 @@ public class AuthFilter implements Filter {
         try {
             DecodedJWT decoded = JwtUtil.validarToken(token);
 
-            if (path.contains("/api/usuarios")) {
+            if (this.contemRota(path, ROTAS_PRIVADAS)) {
                 String tipo = decoded.getClaim("tipo").asString();
                 if (!"admin".equalsIgnoreCase(tipo)) {
                     resp.setContentType("application/json");
@@ -67,5 +75,14 @@ public class AuthFilter implements Filter {
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
             resp.getWriter().write("{\"erro\": \"Token inválido ou expirado.\"}");
         }
+    }
+
+    private boolean contemRota(String path, List<String> rotas) {
+            for (String rota : rotas) {
+                if (path.contains(rota)) {
+                    return true;
+            }
+            }
+        return false;
     }
 }

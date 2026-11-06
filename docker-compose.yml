@@ -1,7 +1,7 @@
 services:
   mysql:
     image: mysql:8.4
-    container_name: pdf-java-mysql
+    container_name: pdf-java-mysql-api
 
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -18,7 +18,7 @@ services:
 
   tomcat:
     image: tomcat:10.1-jdk21
-    container_name: pdf-java-tomcat
+    container_name: pdf-java-tomcat-api
 
     ports:
       - "8080:8080"
