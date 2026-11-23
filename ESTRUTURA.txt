@@ -1,78 +1,78 @@
-ESTRUTURA DO PROJETO - projeto-desafio-fitness
-================================================
+ESTRUTURA DO PROJETO - projeto-desafio-fitness-api
+====================================================
 
-Arquitetura em camadas (padrao MVC): Servlet (controller) -> Service (regra
-de negocio) -> DAO (acesso a banco) -> Model (dados). As views sao JSP.
+API REST em Java (Servlets) com arquitetura em camadas (padrao MVC):
+Controller (rota HTTP) -> Service (regra de negocio) -> DAO (acesso a banco)
+-> Model (dados). Nao ha telas aqui: todas as respostas sao JSON. O front
+end fica em outro projeto e consome esta API por HTTP.
 
 Fluxo de uma requisicao:
-  Request HTTP -> Controller -> Service -> DAO -> Banco de dados
-                     |             |
-                     v             v
-                 escolhe JSP   valida regras
+  Request HTTP -> AuthFilter -> Controller -> Service -> DAO -> MySQL
+                      |             |            |
+                      v             v            v
+                 valida token   le/responde   valida regras
+                 JWT            JSON + status
 
 
 src/main/java/com/fitness/
 ----------------------------
 model/
-    Usuario.java, Perfil.java
+    Usuario.java, Desafio.java, Participacao.java, Progresso.java
     Apenas os dados (getters/setters), sem logica. Representam as tabelas
-    do banco.
+    do banco. Os nomes dos atributos (snake_case) sao os nomes dos campos
+    no JSON.
 
 dao/
-    UsuarioDAO.java, PerfilDAO.java, MysqlDAO.java (classe base)
+    UsuarioDAO.java, DesafioDAO.java, ParticipacaoDAO.java,
+    ProgressoDAO.java, MysqlDAO.java (classe base)
     Apenas SQL puro (SELECT/INSERT/UPDATE/DELETE) e conversao de
     ResultSet para objeto. Nenhuma validacao ou regra de negocio aqui.
 
 service/
-    UsuarioService.java, PerfilService.java
-    Regra de negocio: validacoes, autenticacao, senha minima, login
-    unico, etc. Chama o DAO. Nunca lida com HttpServletRequest/Response.
+    UsuarioService.java, DesafioService.java, ParticipacaoService.java,
+    ProgressoService.java
+    Regra de negocio: validacoes, autenticacao, senha minima, e-mail
+    unico, calculo de progresso, etc. Chama o DAO. Nunca lida com
+    HttpServletRequest/Response.
 
 controller/
-    UsuarioServlet.java, PerfilServlet.java, LoginServlet.java,
-    HomeServlet.java, LogoutServlet.java, BaseServlet.java
-    Ponte entre a rota HTTP e o Service. Le parametros (acao, id), chama
-    o Service e decide qual JSP mostrar ou se redireciona.
+    UsuarioServlet.java, DesafioServlet.java, ParticipacaoServlet.java,
+    ProgressoServlet.java, LoginServlet.java, RegisterServlet.java,
+    BaseServlet.java
+    Ponte entre a rota HTTP e o Service. Le o JSON do corpo e o id da
+    URL, chama o Service e responde JSON com o status HTTP correto
+    (200, 201, 204, 400, 401, 403, 404, 500).
     BaseServlet e a classe base: so tem metodos utilitarios genericos
-    (param, paramLong, forward, redirect), sem regra nenhuma.
+    (lerJson, responderJson, responderErro, extrairId, usuarioLogadoId,
+    paramLong), sem regra nenhuma.
 
 filter/
     AuthFilter.java
-    Intercepta as requisicoes antes do Servlet, verifica se o usuario
-    esta logado (sessao). Mexer aqui apenas para regras globais de
-    autenticacao/seguranca.
+    Intercepta todas as requisicoes /api/* antes do Servlet. Libera
+    /api/login e /api/register; nas demais exige o header
+    "Authorization: Bearer <token>" e valida o JWT. A rota /api/usuarios
+    so e liberada para administradores. Mexer aqui apenas para regras
+    globais de autenticacao/seguranca.
 
 config/
     MysqlSingleton.java
     Conexao unica com o banco de dados (padrao singleton). Mexer apenas
     se mudar a configuracao de conexao.
+    JwtUtil.java
+    Gera e valida os tokens JWT (validade de 2 horas).
 
 
 src/main/webapp/
 -----------------
-index.jsp
-    Pagina inicial publica.
-
 WEB-INF/web.xml
     Configuracao do servlet container.
-
-WEB-INF/jsp/
-    Views protegidas, so acessiveis via forward do controller (nao por
-    URL direta). Organizadas por entidade:
-      usuarios/lista.jsp e usuarios/form.jsp
-      perfis/lista.jsp e perfis/form.jsp
-      login.jsp
-      home.jsp
-
-css/estilo.css
-    Estilo visual da aplicacao.
 
 
 Pastas que NAO devem ser editadas manualmente
 ----------------------------------------------
 target/   -> gerado automaticamente pelo Maven ao compilar (mvn compile/
              package). Qualquer edicao manual e perdida no proximo build.
-deploy/   -> artefato de deploy (WAR extraido). Mesma logica do target/,
+deploy/   -> artefato de deploy (WAR). Mesma logica do target/,
              nao e codigo-fonte.
 
 Ambas as pastas estao no .gitignore e nao devem ser versionadas no Git.
@@ -81,8 +81,9 @@ Ambas as pastas estao no .gitignore e nao devem ser versionadas no Git.
 Outros arquivos na raiz
 ------------------------
 database.sql       -> script de criacao/estrutura do banco de dados.
-docker-compose.yml -> sobe o ambiente (ex: banco MySQL) via Docker.
-pom.xml             -> configuracao do Maven (dependencias, build).
+docker-compose.yml -> sobe o ambiente (MySQL + Tomcat) via Docker.
+pom.xml            -> configuracao do Maven (dependencias, build).
+README.md          -> como rodar e documentacao dos endpoints.
 
 Regra geral: cada camada so fala com a camada de baixo dela
 (Controller -> Service -> DAO). Nunca pular camada (ex: Controller
