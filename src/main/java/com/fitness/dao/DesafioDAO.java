@@ -67,38 +67,6 @@ public class DesafioDAO extends MysqlDAO {
         return null;
     }
 
-    public List<Desafio> listarPorCriador(Long criadorId) {
-        String sql = "SELECT id, criador_id, nome, descricao, categoria, tipo_meta, meta_total, unidade_medida, data_inicio, data_fim, status, criado_em, atualizado_em "
-                + "FROM desafios "
-                + "WHERE criador_id = ?";
-        List<Desafio> lista = new ArrayList<>();
-        try (ResultSet rs = super.executar(sql, criadorId)) {
-            while (rs.next()) {
-                lista.add(this.mapearDesafio(rs));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao listar desafios por criador.", e);
-        }
-        return lista;
-    }
-
-    public List<Desafio> listarPorParticipante(Long usuarioId) {
-        String sql = "SELECT d.id, d.criador_id, d.nome, d.descricao, d.categoria, d.tipo_meta, d.meta_total, "
-                + "d.unidade_medida, d.data_inicio, d.data_fim, d.status, d.criado_em, d.atualizado_em "
-                + "FROM desafios d "
-                + "INNER JOIN participacoes_desafio p ON p.desafio_id = d.id "
-                + "WHERE p.usuario_id = ?";
-        List<Desafio> lista = new ArrayList<>();
-        try (ResultSet rs = super.executar(sql, usuarioId)) {
-            while (rs.next()) {
-                lista.add(this.mapearDesafio(rs));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao listar desafios por participante.", e);
-        }
-        return lista;
-    }
-
     public void inserir(Desafio desafio) {
         String sql = "INSERT INTO desafios (criador_id, nome, descricao, categoria, tipo_meta, meta_total, data_inicio, data_fim, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try {

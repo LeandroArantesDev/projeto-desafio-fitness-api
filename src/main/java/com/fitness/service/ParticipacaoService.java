@@ -7,7 +7,7 @@ import com.fitness.model.Participacao;
 /**
  * SERVICE de Participacao — regras de negocio ficam aqui.
  *
- * Controller so chama estes metodos e decide a view.
+ * Controller so chama estes metodos e responde em JSON.
  * DAO so executa SQL.
  */
 public class ParticipacaoService {
@@ -47,10 +47,6 @@ public class ParticipacaoService {
 
     public Participacao buscarPorUsuarioEDesafio(Long usuarioId, Long desafioId) {
         return this.participacaoDAO.buscarPorUsuarioEDesafio(usuarioId, desafioId);
-    }
-
-    public Participacao buscarPorId(Long id) {
-        return this.participacaoDAO.buscarPorId(id);
     }
 
 }

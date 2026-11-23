@@ -9,7 +9,6 @@ public class Usuario {
     private String email;
     private String tipo;
     private String senha_hash;
-    private String status;
     private LocalDateTime criado_em;
     private LocalDateTime atualizado_em;
 
@@ -51,14 +50,6 @@ public class Usuario {
 
     public void setSenha(String senha_hash) {
         this.senha_hash = senha_hash;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public LocalDateTime getCriadoEm() {

@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * SERVICE de Usuario — regras de negocio ficam aqui.
  *
- * Controller so chama estes metodos e decide a view.
+ * Controller so chama estes metodos e responde em JSON.
  * DAO so executa SQL.
  */
 public class UsuarioService {
@@ -37,34 +37,6 @@ public class UsuarioService {
         Usuario usuario = this.usuarioDAO.buscarPorLoginESenha(email, senha);
         if (usuario == null) {
             throw new IllegalArgumentException("E-mail ou senha inválidos.");
-        }
-        return usuario;
-    }
-
-    public Usuario registrar(String nome, String email, String senha) {
-        nome = this.normalizar(nome);
-        email = this.normalizar(email);
-        senha = this.normalizar(senha);
-
-        if (nome == null || email == null || senha == null) {
-            throw new IllegalArgumentException("Informe nome, e-mail e senha.");
-        }
-
-        if (!this.usuarioDAO.verificarUsuarioUnico(email)) {
-            throw new IllegalArgumentException("Já existe um usuário registrado com esse e-mail.");
-        }
-
-        if (senha.length() < 8) {
-            throw new IllegalArgumentException("A senha deve ter no mínimo 8 caracteres.");
-        }
-
-        if (!this.usuarioDAO.registrar(nome, email, senha)) {
-            throw new IllegalArgumentException("Erro ao registrar usuário.");
-        }
-
-        Usuario usuario = this.usuarioDAO.buscarPorLoginESenha(email, senha);
-        if (usuario == null) {
-            throw new IllegalArgumentException("Erro ao buscar usuário.");
         }
         return usuario;
     }
@@ -134,6 +106,12 @@ public class UsuarioService {
         usuario.setNome(this.normalizar(usuario.getNome()));
         usuario.setEmail(this.normalizar(usuario.getEmail()));
         usuario.setSenha(this.normalizar(usuario.getSenha()));
+        usuario.setTipo(this.normalizar(usuario.getTipo()));
+
+        // sem tipo informado, vira usuario comum (mesmo DEFAULT da tabela)
+        if (usuario.getTipo() == null) {
+            usuario.setTipo("user");
+        }
     }
 
     private void validarCamposObrigatorios(Usuario usuario) {

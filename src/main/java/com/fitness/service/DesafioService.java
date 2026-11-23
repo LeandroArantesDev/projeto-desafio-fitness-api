@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * SERVICE de Desafio — regras de negocio ficam aqui.
  *
- * Controller so chama estes metodos e decide a view.
+ * Controller so chama estes metodos e responde em JSON.
  * DAO so executa SQL.
  */
 public class DesafioService {
@@ -23,10 +23,6 @@ public class DesafioService {
         this.desafioDAO = new DesafioDAO();
         this.participacaoDAO = new ParticipacaoDAO();
         this.progressoService = new ProgressoService();
-    }
-
-    public List<Desafio> listar() {
-        return this.desafioDAO.listarTodosDesafios();
     }
 
     /**
@@ -53,14 +49,6 @@ public class DesafioService {
             desafio.setProgressoPercentual(Math.min(100.0, percentual));
         }
         return desafios;
-    }
-
-    public List<Desafio> listarCriadosPor(Long usuarioId) {
-        return this.desafioDAO.listarPorCriador(usuarioId);
-    }
-
-    public List<Desafio> listarParticipando(Long usuarioId) {
-        return this.desafioDAO.listarPorParticipante(usuarioId);
     }
 
     public Desafio buscarPorId(Long id) {

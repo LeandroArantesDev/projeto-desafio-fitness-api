@@ -20,7 +20,7 @@ public class DesafioServlet extends BaseServlet {
     private final DesafioService desafioService = new DesafioService();
 
     // ==========================================
-    // GET: Listar todos ou buscar por ID
+    // GET: Listar todos (com participacao e progresso do usuario logado) ou buscar por ID
     // ==========================================
 
     @Override
@@ -31,7 +31,7 @@ public class DesafioServlet extends BaseServlet {
             Long id = this.extrairId(req);
 
             if (id == null) {
-                this.responderJson(resp, 200, this.desafioService.listar());
+                this.responderJson(resp, 200, this.desafioService.listarComProgresso(this.usuarioLogadoId(req)));
                 return;
             }
 

@@ -45,21 +45,6 @@ public class UsuarioDAO extends MysqlDAO {
         return null;
     }
 
-
-    public boolean registrar(String nome, String email, String senha) {
-        String sql = "INSERT INTO usuarios (nome, email, senha_hash, tipo) "
-                        + "VALUES (?, ?, ?, ?)";
-        String tipo = "user";
-        String senha_hash = BCrypt.hashpw(senha, BCrypt.gensalt());
-
-        try {
-            int linhasAfetadas = super.executarUpdate(sql, nome, email, senha_hash, tipo);
-            return linhasAfetadas > 0;
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao registrar usuário.", e);
-        }
-    }
-
     private Usuario mapearUsuario(ResultSet rs) throws SQLException {
         Usuario usuario = new Usuario();
         usuario.setId(rs.getLong("id"));
@@ -117,22 +102,6 @@ public class UsuarioDAO extends MysqlDAO {
             throw new RuntimeException("Erro ao buscar por id.", e);
         }
         return null;
-    }
-
-    public boolean verificarUsuarioUnico(String email) {
-        String sql = "SELECT COUNT(*) "
-               + "FROM usuarios "
-               + "WHERE email = ?";
-               
-        try (ResultSet rs = super.executar(sql, email)) {
-            if (rs.next()) {
-                int quantidade = rs.getInt(1);
-                return quantidade == 0;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao verificar se usuário é único.", e);
-        }
-        return false;
     }
 
 
