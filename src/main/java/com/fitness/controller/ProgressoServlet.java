@@ -49,7 +49,7 @@ public class ProgressoServlet extends BaseServlet {
         this.responderJson(resp, 200, Map.of(
                 "participacao", participacao,
                 "historico", this.progressoService.listarPorParticipacao(participacao.getId()),
-                "totalRegistrado", this.progressoService.totalRegistrado(participacao.getId())));
+                "total_registrado", this.progressoService.totalRegistrado(participacao.getId())));
     }
 
     // ==========================================

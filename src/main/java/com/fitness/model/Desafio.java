@@ -18,8 +18,8 @@ public class Desafio {
     private LocalDateTime criado_em;
     private LocalDateTime atualizado_em;
     private boolean participando;
-    private Double progressoAtual;
-    private Double progressoPercentual;
+    private Double progresso_atual;
+    private Double progresso_percentual;
 
     public Long getId() {
         return id;
@@ -134,18 +134,18 @@ public class Desafio {
     }
 
     public Double getProgressoAtual() {
-        return progressoAtual;
+        return progresso_atual;
     }
 
-    public void setProgressoAtual(Double progressoAtual) {
-        this.progressoAtual = progressoAtual;
+    public void setProgressoAtual(Double progresso_atual) {
+        this.progresso_atual = progresso_atual;
     }
 
     public Double getProgressoPercentual() {
-        return progressoPercentual;
+        return progresso_percentual;
     }
 
-    public void setProgressoPercentual(Double progressoPercentual) {
-        this.progressoPercentual = progressoPercentual;
+    public void setProgressoPercentual(Double progresso_percentual) {
+        this.progresso_percentual = progresso_percentual;
     }
 }
