@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * Controller de Usuario.
- * Ponte entre rota, service e view — sem regra de negocio.
+ * Ponte entre rota, service e resposta JSON — sem regra de negocio.
  */
 @WebServlet("/api/usuarios/*")
 public class UsuarioServlet extends BaseServlet {
@@ -30,15 +30,15 @@ public class UsuarioServlet extends BaseServlet {
 
         try {
             Long id = this.extrairId(req);
-        
+
             if (id == null) {
                 List<Usuario> lista = this.usuarioService.listar();
                 for (Usuario u : lista) {
                     u.setSenha(null);
                 }
-            
-            this.responderJson(resp, 200, lista);
-            return;
+
+                this.responderJson(resp, 200, lista);
+                return;
             }
 
             Usuario usuario = this.usuarioService.buscarPorId(id);
@@ -87,7 +87,7 @@ public class UsuarioServlet extends BaseServlet {
     // PUT: Atualizar usuário existente
     // ==========================================
 
-    @Override 
+    @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         try {
@@ -99,7 +99,7 @@ public class UsuarioServlet extends BaseServlet {
 
             Usuario usuario = this.lerJson(req, Usuario.class);
 
-            if(usuario == null) {
+            if (usuario == null) {
                 this.responderErro(resp, 400, "Dados do usuário não fornecidos.");
                 return;
             }
@@ -110,7 +110,7 @@ public class UsuarioServlet extends BaseServlet {
             usuario.setSenha(null);
             this.responderJson(resp, 200, usuario);
 
-        }  catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             this.responderErro(resp, 400, "O ID fornecido na URL é inválido.");
         } catch (IllegalArgumentException e) {
             int status = e.getMessage().contains("nao encontrado") ? 404 : 400;
@@ -120,17 +120,15 @@ public class UsuarioServlet extends BaseServlet {
         }
     }
 
-
     // ==========================================
     // DELETE: Excluir usuário
     // ==========================================
-
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         try {
-            Long id = this.extrairId(req);  
+            Long id = this.extrairId(req);
 
             if (id == null) {
                 this.responderErro(resp, 400, "Informe o ID do usuário na URL");
@@ -142,7 +140,7 @@ public class UsuarioServlet extends BaseServlet {
 
         } catch (NumberFormatException e) {
             this.responderErro(resp, 400, "O ID fornecido na URL é inválido.");
-        } catch (IllegalArgumentException e ) {
+        } catch (IllegalArgumentException e) {
             int status = e.getMessage().contains("nao encontrado") ? 404 : 400;
             this.responderErro(resp, status, e.getMessage());
         } catch (Exception e) {

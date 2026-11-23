@@ -11,17 +11,19 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
-
 /**
  * Controller de Login.
- * Ponte entre rota (/login), {@link UsuarioService} e a view.
- * Sem regra de negocio: so chama o service e encaminha o resultado.
+ * Ponte entre rota, service e resposta JSON — sem regra de negocio.
  */
 @WebServlet("/api/login")
 public class LoginServlet extends BaseServlet {
 
     private final UsuarioService usuarioService = new UsuarioService();
-    
+
+    // ==========================================
+    // POST: Autenticar e devolver o token JWT
+    // ==========================================
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
@@ -29,6 +31,7 @@ public class LoginServlet extends BaseServlet {
             Map<?, ?> dados = this.lerJson(req, Map.class);
             if (dados == null) {
                 this.responderErro(resp, 400, "Informe e-mail e senha.");
+                return;
             }
 
             String email = (String) dados.get("email");
@@ -39,17 +42,14 @@ public class LoginServlet extends BaseServlet {
             String token = JwtUtil.gerarToken(usuario);
 
             this.responderJson(resp, 200, Map.of(
-                "token", token,
-                "nome", usuario.getNome(),
-                "tipo", usuario.getTipo()
-            ));
+                    "token", token,
+                    "nome", usuario.getNome(),
+                    "tipo", usuario.getTipo()));
 
         } catch (IllegalArgumentException e) {
             this.responderErro(resp, 401, e.getMessage());
         } catch (Exception e) {
-            this.responderJson(resp, 500, "Erro interno ao realizar login.");
-        } 
-
-        return;
+            this.responderErro(resp, 500, "Erro interno ao realizar login.");
+        }
     }
 }

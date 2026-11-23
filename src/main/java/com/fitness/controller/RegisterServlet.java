@@ -10,9 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Controller de Login.
- * Ponte entre rota (/login), {@link UsuarioService} e a view.
- * Sem regra de negocio: so chama o service e encaminha o resultado.
+ * Controller de Registro.
+ * Ponte entre rota, service e resposta JSON — sem regra de negocio.
  */
 @WebServlet("/api/register/*")
 public class RegisterServlet extends BaseServlet {
@@ -23,6 +22,7 @@ public class RegisterServlet extends BaseServlet {
     // POST: Criar um novo usuário por fora do site
     // ==========================================
 
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         try {
