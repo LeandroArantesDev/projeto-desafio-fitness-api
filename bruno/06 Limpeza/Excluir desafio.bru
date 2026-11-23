@@ -1,0 +1,20 @@
+meta {
+  name: Excluir desafio
+  type: http
+  seq: 1
+}
+
+delete {
+  url: {{baseUrl}}/desafios/{{desafioId}}
+  body: none
+  auth: inherit
+}
+
+docs {
+  204 sem corpo. 404 se não existe.
+  Apaga junto as participações e progressos do desafio.
+}
+
+assert {
+  res.status: eq 204
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Ver progresso no desafio
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/progressos?desafioId={{desafioId}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  desafioId: {{desafioId}}
+}
+
+docs {
+  Participação, histórico e `total_registrado` do usuário logado no desafio.
+  400 sem `desafioId`; 404 se o usuário não participa do desafio.
+}
+
+assert {
+  res.status: eq 200
+}

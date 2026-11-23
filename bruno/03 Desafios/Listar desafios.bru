@@ -1,0 +1,27 @@
+meta {
+  name: Listar desafios
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/desafios
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.length) {
+    bru.setVar("desafioId", Math.max(...res.body.map(d => d.id)));
+  }
+}
+
+docs {
+  Todos os desafios, já com os dados do usuário logado:
+  `participando`, `progresso_atual` e `progresso_percentual` (máximo 100).
+  O script guarda em `desafioId` o id do desafio mais recente.
+}
+
+assert {
+  res.status: eq 200
+}

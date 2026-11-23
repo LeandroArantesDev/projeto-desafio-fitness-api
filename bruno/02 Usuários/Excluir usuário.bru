@@ -1,0 +1,20 @@
+meta {
+  name: Excluir usuário
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/usuarios/{{usuarioId}}
+  body: none
+  auth: inherit
+}
+
+docs {
+  204 sem corpo. 404 se não existe.
+  400 se o usuário criou desafios (não pode excluir).
+}
+
+assert {
+  res.status: eq 204
+}

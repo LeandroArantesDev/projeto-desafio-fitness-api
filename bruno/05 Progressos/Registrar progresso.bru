@@ -1,0 +1,29 @@
+meta {
+  name: Registrar progresso
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/progressos
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "participacao_id": {{participacaoId}},
+    "valor_registrado": 5.5,
+    "observacao": "Corrida leve no parque",
+    "data_registro": "2026-12-05"
+  }
+}
+
+docs {
+  Obrigatórios: participacao_id, valor_registrado (maior que zero) e data_registro.
+  `observacao` é opcional. Resposta 201.
+}
+
+assert {
+  res.status: eq 201
+}

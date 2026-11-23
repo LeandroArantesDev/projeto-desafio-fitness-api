@@ -1,0 +1,24 @@
+vars:pre-request {
+  baseUrl: http://localhost:8080/projeto-desafio-fitness/api
+}
+
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # API Desafio Fitness
+
+  1. Rode **01 Autenticação > Login admin** primeiro: o token é salvo sozinho na variável `token`.
+  2. Todas as outras requisições herdam o token (`Authorization: Bearer {{token}}`).
+  3. Os ids usados nas URLs (`usuarioId`, `desafioId`, `participacaoId`) também são salvos pelos scripts:
+     - Listar usuários / Listar desafios guardam o id do registro mais recente (o que acabou de ser criado).
+     - Participar guarda o id da participação.
+  
+  Ordem sugerida para testar tudo: Criar -> Listar -> Buscar -> Atualizar em cada pasta,
+  depois Participar e Progressos. A pasta Limpeza exclui o desafio de teste por último.
+}

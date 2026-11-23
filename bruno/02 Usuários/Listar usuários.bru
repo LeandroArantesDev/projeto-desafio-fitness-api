@@ -1,0 +1,26 @@
+meta {
+  name: Listar usuários
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/usuarios
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.length) {
+    bru.setVar("usuarioId", Math.max(...res.body.map(u => u.id)));
+  }
+}
+
+docs {
+  Somente admin (usuário comum: 403).
+  O script guarda em `usuarioId` o id do usuário mais recente.
+}
+
+assert {
+  res.status: eq 200
+}

@@ -1,0 +1,34 @@
+meta {
+  name: Login admin
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@gmail.com",
+    "senha": "password"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("token", res.body.token);
+  }
+}
+
+docs {
+  Rota pública. Devolve `id`, `token`, `nome` e `tipo`.
+  O script salva o token na variável `token`, usado por todas as outras requisições.
+  E-mail ou senha errados: 401.
+}
+
+assert {
+  res.status: eq 200
+}

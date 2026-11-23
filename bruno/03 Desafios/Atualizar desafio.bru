@@ -1,0 +1,32 @@
+meta {
+  name: Atualizar desafio
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/desafios/{{desafioId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nome": "Desafio 80km em Dezembro",
+    "descricao": "Meta aumentada",
+    "categoria": "corrida",
+    "tipo_meta": "distancia_km",
+    "meta_total": 80,
+    "data_inicio": "2026-12-01",
+    "data_fim": "2026-12-31",
+    "status": "ativo"
+  }
+}
+
+docs {
+  Envie o desafio completo (PUT substitui). 404 se não existe.
+}
+
+assert {
+  res.status: eq 200
+}

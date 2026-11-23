@@ -1,0 +1,37 @@
+meta {
+  name: Criar desafio
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/desafios
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nome": "Desafio 50km em Dezembro",
+    "descricao": "Correr 50km no mês",
+    "categoria": "corrida",
+    "tipo_meta": "distancia_km",
+    "meta_total": 50,
+    "data_inicio": "2026-12-01",
+    "data_fim": "2026-12-31",
+    "status": "ativo"
+  }
+}
+
+docs {
+  O criador é o usuário do token (não vai no body).
+  Obrigatórios: nome, categoria, tipo_meta, meta_total, data_inicio, data_fim (depois do início).
+  - categoria: corrida, musculacao, ciclismo, flexoes, habito, outro
+  - tipo_meta: repeticoes, distancia_km, tempo_minutos, dias_seguidos
+  - status: ativo (padrão), finalizado, cancelado
+  Depois rode "Listar desafios" para guardar o id dele em `desafioId`.
+}
+
+assert {
+  res.status: eq 201
+}

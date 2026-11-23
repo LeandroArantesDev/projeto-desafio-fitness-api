@@ -1,0 +1,33 @@
+meta {
+  name: Login usuário comum
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "teste@gmail.com",
+    "senha": "password"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("token", res.body.token);
+  }
+}
+
+docs {
+  Mesmo login, com um usuário de tipo `user`.
+  Com este token, `/api/usuarios` responde 403 (só admin).
+}
+
+assert {
+  res.status: eq 200
+}

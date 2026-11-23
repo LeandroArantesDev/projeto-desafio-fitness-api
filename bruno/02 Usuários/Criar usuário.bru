@@ -1,0 +1,34 @@
+meta {
+  name: Criar usuário
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/usuarios
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nome": "João",
+    "email": "{{emailUsuario}}",
+    "senha_hash": "123456",
+    "tipo": "user"
+  }
+}
+
+script:pre-request {
+  bru.setVar("emailUsuario", `joao_${Date.now()}@gmail.com`);
+}
+
+docs {
+  `tipo`: `admin` ou `user` (sem informar, vira `user`).
+  Senha com no mínimo 6 caracteres. Resposta 201 sem a senha.
+  Depois rode "Listar usuários" para guardar o id dele em `usuarioId`.
+}
+
+assert {
+  res.status: eq 201
+}

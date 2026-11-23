@@ -1,0 +1,33 @@
+meta {
+  name: Registrar
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nome": "Maria",
+    "email": "{{emailNovo}}",
+    "senha_hash": "123456"
+  }
+}
+
+script:pre-request {
+  bru.setVar("emailNovo", `maria_${Date.now()}@gmail.com`);
+}
+
+docs {
+  Cadastro público. O usuário é sempre criado com `tipo` = `user`.
+  O script gera um e-mail novo a cada envio (e-mail repetido: 400).
+  Resposta 201 com o usuário criado, sem a senha.
+}
+
+assert {
+  res.status: eq 201
+}

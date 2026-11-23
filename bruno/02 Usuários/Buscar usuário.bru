@@ -1,0 +1,19 @@
+meta {
+  name: Buscar usuário
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/usuarios/{{usuarioId}}
+  body: none
+  auth: inherit
+}
+
+docs {
+  200 com o usuário, 404 se não existe, 400 se o id não é número.
+}
+
+assert {
+  res.status: eq 200
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Atualizar usuário
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/usuarios/{{usuarioId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nome": "João Atualizado",
+    "email": "{{emailUsuario}}",
+    "tipo": "user"
+  }
+}
+
+docs {
+  Sem `senha_hash` no body, a senha atual é mantida.
+  404 se o usuário não existe.
+}
+
+assert {
+  res.status: eq 200
+}
