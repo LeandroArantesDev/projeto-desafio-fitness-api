@@ -42,6 +42,7 @@ public class LoginServlet extends BaseServlet {
             String token = JwtUtil.gerarToken(usuario);
 
             this.responderJson(resp, 200, Map.of(
+                    "id", usuario.getId(),
                     "token", token,
                     "nome", usuario.getNome(),
                     "tipo", usuario.getTipo()));
