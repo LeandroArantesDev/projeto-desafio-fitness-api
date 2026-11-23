@@ -1,7 +1,9 @@
 package com.fitness.service;
 
 import com.fitness.dao.DesafioDAO;
+import com.fitness.dao.ParticipacaoDAO;
 import com.fitness.model.Desafio;
+import com.fitness.model.Participacao;
 
 import java.util.List;
 
@@ -14,13 +16,43 @@ import java.util.List;
 public class DesafioService {
 
     private final DesafioDAO desafioDAO;
+    private final ParticipacaoDAO participacaoDAO;
+    private final ProgressoService progressoService;
 
     public DesafioService() {
         this.desafioDAO = new DesafioDAO();
+        this.participacaoDAO = new ParticipacaoDAO();
+        this.progressoService = new ProgressoService();
     }
 
     public List<Desafio> listar() {
         return this.desafioDAO.listarTodosDesafios();
+    }
+
+    /**
+     * Lista todos os desafios marcando, para o usuario informado:
+     * - se ele participa
+     * - quanto ja registrou de progresso e o percentual da meta (maximo 100%)
+     */
+    public List<Desafio> listarComProgresso(Long usuarioId) {
+        List<Desafio> desafios = this.desafioDAO.listarTodosDesafios();
+
+        for (Desafio desafio : desafios) {
+            Participacao participacao = this.participacaoDAO.buscarPorUsuarioEDesafio(
+                    usuarioId, desafio.getId());
+            desafio.setParticipando(participacao != null);
+
+            double progresso = participacao == null
+                    ? 0.0
+                    : this.progressoService.totalRegistrado(participacao.getId());
+            desafio.setProgressoAtual(progresso);
+
+            double percentual = desafio.getMetaTotal() == null || desafio.getMetaTotal() <= 0
+                    ? 0.0
+                    : (progresso / desafio.getMetaTotal()) * 100.0;
+            desafio.setProgressoPercentual(Math.min(100.0, percentual));
+        }
+        return desafios;
     }
 
     public List<Desafio> listarCriadosPor(Long usuarioId) {
